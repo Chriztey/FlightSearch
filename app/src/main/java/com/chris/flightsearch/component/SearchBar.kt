@@ -47,7 +47,7 @@ fun SearchBar(
 ) {
 
     Box(
-        modifier = Modifier.padding(vertical = 8.dp)
+        modifier = Modifier.padding(8.dp)
     ) {
         val focusManager = LocalFocusManager.current
         Column {

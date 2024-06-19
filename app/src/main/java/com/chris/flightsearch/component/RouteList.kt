@@ -26,7 +26,7 @@ fun RouteList(
     ) {
 
     LazyColumn(
-        modifier = Modifier.padding(vertical = 16.dp),
+        modifier = Modifier.padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(

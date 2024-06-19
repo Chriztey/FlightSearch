@@ -2,6 +2,7 @@ package com.chris.flightsearch.screen
 
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,13 +10,17 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -46,10 +51,12 @@ object QueryResultDestination: Nav{
     val argRoute = "$routeDestination/{$queryArgument}"
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QueryResultScreen(
     viewModel: AirportViewModel = viewModel(factory = AppViewModelProvider.Factory),
     onNavToQuery: (String) -> Unit,
+    navBack: () -> Unit
 ) {
     val queryResultUiState by viewModel.uiState.collectAsState()
     val destinationList by viewModel.destinationAirportList.collectAsState()
@@ -58,30 +65,53 @@ fun QueryResultScreen(
     val scope = rememberCoroutineScope()
     var focus by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(16.dp)
-    ) {
-        SearchBar(
-            viewModel = viewModel,
-            airportSearchQuery = queryResultUiState.airportSearchQuery,
-            onFocusChange = {focus = it},
-            focus = focus,
-            airportQueryList = queryResultUiState.airportQueryList,
-            onNavToQuery = {onNavToQuery(it)},
-            scope = scope,
-        )
-        Text(
-            text = "Flights From ${QueryResultDestination.routeName}",
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(vertical = 8.dp))
-        RouteList(
-            destinationList = destinationList,
-            favoriteList = favoriteList,
-            selectedAirport = selectedAirport,
-            scope = scope,
-            viewModel = viewModel
-        )
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = QueryResultDestination.routeName)
+                },
+                navigationIcon = {
+
+                        IconButton(onClick = {navBack()}) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+                }
+            )
+        }
+    ) { it ->
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(it)
+        ) {
+            SearchBar(
+                viewModel = viewModel,
+                airportSearchQuery = queryResultUiState.airportSearchQuery,
+                onFocusChange = { focus = it },
+                focus = focus,
+                airportQueryList = queryResultUiState.airportQueryList,
+                onNavToQuery = { onNavToQuery(it) },
+                scope = scope,
+            )
+            Text(
+                text = "Flights From ${QueryResultDestination.routeName}",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            RouteList(
+                destinationList = destinationList,
+                favoriteList = favoriteList,
+                selectedAirport = selectedAirport,
+                scope = scope,
+                viewModel = viewModel
+            )
+        }
     }
 
 }

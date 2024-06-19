@@ -12,8 +12,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -51,79 +57,99 @@ fun MainScreen(
     val favoriteList by viewModel.favoriteRouteList.collectAsState()
     //val searchQueryKey by viewModel.searchQueryKey.collectAsState()
     val scope = rememberCoroutineScope()
-
-
-
-
-    Column (
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-    ) {
-
-        var focus by remember { mutableStateOf(false) }
-        Log.d("TAG", focus.toString())
-
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            ) {
-            SearchBar(
-                viewModel = viewModel,
-                airportSearchQuery = mainScreenUiState.airportSearchQuery,
-                onFocusChange = { focus = it },
-                focus = focus,
-                airportQueryList = mainScreenUiState.airportQueryList,
-                onNavToQuery = { onNavToQuery(it) },
-                scope = scope,
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = "Flight Search")
+                },
+//                navigationIcon = {
+//                    if (haveBackStackEntry) {
+//                        IconButton(onClick = {navHostController.navigateUp()}) {
+//                            Icon(
+//                                imageVector = Icons.Default.ArrowBack,
+//                                contentDescription = "Back"
+//                            )
+//                        }
+//                    }
+//
+//                }
             )
+        }
+    ) { it ->
 
-            if (favoriteList.list.isNotEmpty()) {
-                Text(
-                    text = "Favorites",
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(it),
+        ) {
+
+            var focus by remember { mutableStateOf(false) }
+            Log.d("TAG", focus.toString())
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                SearchBar(
+                    viewModel = viewModel,
+                    airportSearchQuery = mainScreenUiState.airportSearchQuery,
+                    onFocusChange = { focus = it },
+                    focus = focus,
+                    airportQueryList = mainScreenUiState.airportQueryList,
+                    onNavToQuery = { onNavToQuery(it) },
+                    scope = scope,
                 )
 
-                LazyColumn(
-                    modifier = Modifier.padding(vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    items(
-                        favoriteList.list,
-                        key = { it.id }
-                    ) {route ->
-                        val isFavorite = favoriteList.list.any {
-                            it.departureCode == route.departureCode &&
-                                    it.destinationCode == route.destinationCode
-                        }
-                        val unFav = favoriteList.list.find {
-                            it.departureCode == route.departureCode &&
-                                    it.destinationCode == route.destinationCode
-                        }
+                if (favoriteList.list.isNotEmpty()) {
+                    Text(
+                        text = "Favorites",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
 
-                        val departureName = destinationList.list.find {
-                            it.iataCode == route.departureCode
-                        }
+                    LazyColumn(
+                        modifier = Modifier.padding(vertical = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        items(
+                            favoriteList.list,
+                            key = { it.id }
+                        ) { route ->
+                            val isFavorite = favoriteList.list.any {
+                                it.departureCode == route.departureCode &&
+                                        it.destinationCode == route.destinationCode
+                            }
+                            val unFav = favoriteList.list.find {
+                                it.departureCode == route.departureCode &&
+                                        it.destinationCode == route.destinationCode
+                            }
 
-                        val destinationName = destinationList.list.find {
-                            it.iataCode == route.destinationCode
-                        }
+                            val departureName = destinationList.list.find {
+                                it.iataCode == route.departureCode
+                            }
 
-                        FlightDepartDestinationCard(
-                            chosenAirport = route.departureCode,
-                            chosenAirportName = departureName?.name ?: "",
-                            destinationList = route.destinationCode,
-                            destinationName = destinationName?.name ?: "",
-                            removeFavorite = {
-                                scope.launch {
-                                    if (unFav != null) {
-                                        viewModel.removeFavorite(unFav)
+                            val destinationName = destinationList.list.find {
+                                it.iataCode == route.destinationCode
+                            }
+
+                            FlightDepartDestinationCard(
+                                chosenAirport = route.departureCode,
+                                chosenAirportName = departureName?.name ?: "",
+                                destinationList = route.destinationCode,
+                                destinationName = destinationName?.name ?: "",
+                                removeFavorite = {
+                                    scope.launch {
+                                        if (unFav != null) {
+                                            viewModel.removeFavorite(unFav)
+                                        }
                                     }
-                                }
-                            },
-                            isFavorite = isFavorite
-                        )
+                                },
+                                isFavorite = isFavorite
+                            )
+                        }
                     }
                 }
             }
